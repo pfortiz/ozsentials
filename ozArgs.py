@@ -135,6 +135,7 @@ class methods(object):
         self.nMandatoryFields = 0
         self.allFields = {}
         self.tuttiFields = []
+        self.uses = []
         self.internalMap = {}
         # multiple Choices args (from 1 to whatever), always k/v
         self.multiChoice = {}
@@ -159,7 +160,6 @@ class methods(object):
             print "  Usage:", self.usage
         else:
             print "  Usage:", pre, self.usage
-#        print "   Usage ", self.label, self.usage
         arguments = mappy["all"]
         arguments = theArgs
         for arg in arguments:
@@ -207,7 +207,7 @@ class methods(object):
         for mf in self.mandatoryKV:
             paste.append(mf.demo)
             arguments.append(mf.name)
-        print "Usage ", " ".join(paste)
+        print "Usage ", self.usage
 #        print "Argz:", " ".join(arguments)
 #        print "uberD:", self.uberD.keys()
         allArgs = []
@@ -272,6 +272,10 @@ class methods(object):
     # posVal is an array of arrays describing the possible values,
     # explanation, and usage:
     # [ ["name", "expla", "usage"], ... ]
+    def addUsage(self, thing, explanation, mustHaveArgs):
+        self.uses.append({"name":thing, "xpl":explanation,
+                        "req":mustHaveArgs})
+
     def addMandatoryKV(self, name, demo, typo, explanation, **kvargs):
         ent = Argument(name, demo, typo, explanation, "mkv", **kvargs)
 
@@ -434,13 +438,6 @@ class methods(object):
             mall.append(name)
             seq += 1
 
-#            oKeys[opti["name"]] = None
-#            oArgs.append("[{}={}]".format(opti["name"], opti["demo"]))
-#            leDic[opti["name"]] = opti["default"]
-
-#        print "Defining usage"
-#        usage = "Usage: {} {} {} {}".format(prePath, self.name, ' '.join(mArgs),
-#                            ' '.join(oArgs))
 
         mapo["nmkv"] = len(self.mandatoryKV)#  + len(self.mandatoryFields)
         mapo["nmf"] = len(self.mandatoryFields)
@@ -473,7 +470,44 @@ class methods(object):
 
     def check(self, args, prePath):
         __name__ = "check"
-#        print "CHECKING: ", self.name
+#        self.uses.append({"name":thing, "xpl":explanation,
+#                        "req":mustHaveArgs})
+
+        if len(self.uses) > 0:
+            firstPass = {}
+            for arg in args:
+                firstPass[arg] = True
+            print "FirstPass: ", firstPass
+            hasUses = 0
+            llen = 0
+            for uzi in self.uses:
+                print "Looking for use:", uzi["name"]
+                uname = len(uzi["name"])
+                if uname > llen:
+                    llen = uname
+                try:
+                   a =  firstPass[ uzi["name"] ]
+                   hasUses += 1
+                except:
+                    pass
+
+            print "N-USES: ", hasUses
+            if hasUses != 1:
+                for uzi in self.uses:
+#                    print "usage : {} {} {}".format(self.name, 
+#                        uzi["name"], uzi["xpl"])
+                    if len(uzi["req"]) > 0:
+                        examples = []
+                        for ur in uzi["req"]:
+                            if not self.allFields[ur].example is None:
+                                examples.append(self.allFields[ur].example)
+#                            print " requ:", ur, self.allFields[ur]
+                        print "usage: %s %s %s "%(self.name, uzi["name"], " ".join(examples))
+                    else:
+                        print "uzage: %s %s"%(self.name, uzi["name"])
+                    print "      {}".format(uzi["xpl"])
+                sys.exit()
+
         mappy, theArgs = self.makeMap()
 #        print "theArgs:", theArgs
 #        print "Mappy:", mappy
@@ -484,7 +518,8 @@ class methods(object):
         dap = leDic["_argumentsPresent"]
         nArgs = mappy["nargs"]
 
-        usage = "Usage: {} {} {}".format(prePath, self.name, ' '.join(mappy["usage"]))
+#        usage = "Usage: {} {} {}".format(prePath, self.name, ' '.join(mappy["usage"]))
+        usage = "Usage: {} {}".format(prePath, self.usage)
 #                            ' '.join(oArgs))
 
         # load the different arguments into a dictionary
@@ -519,20 +554,6 @@ class methods(object):
                     print "WARNING: Unrecognized argument name:", key
                     continue
 
-#                pv = self.allFields[key].pv
-#                if not pv is None:
-#                    fail = self._validate(pv, key, val)
-#                    
-#                depOn = self.allFields[key].dependsOn
-#                if not depOn is None:
-#                    review[key] = depOn
-#
-#                dap[key] = True
-#                leDic[key] = val
-
-#            except:
-#                print "invalid argument", arg, " Not in the form key=value"
-#                fail = True
             else:
 #                print "arg is passed by mandatory order", arg
                 if nNokv < mappy["nmf"]:
