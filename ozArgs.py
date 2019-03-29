@@ -193,6 +193,17 @@ class methods(object):
         print ""
         return
 
+    def showArgs(self, moi):
+        mappy, theArgs = self.makeMap()
+        for arg in theArgs:
+            fld = self.allFields[arg]
+            if not fld.default is None:
+                print "{} {}".format(arg, fld.default)
+            else:
+                print "{} {}".format(arg, None)
+
+        # end showArgs
+
     def showHelp(self, moi):
         mappy, theArgs = self.makeMap()
 #        print theArgs
@@ -263,11 +274,11 @@ class methods(object):
 
     def addMandatoryTest(self, name, demo, typo, explanation, **kvargs):
         ent0 = Argument(name, demo, typo, explanation, "test", **kvargs)
-        ent0.newName = "shit"
+#        ent0.newName = "shit"
 #        print ent0
-        print ent0.name
-        print ent0.kind
-        print "New-name:", ent0.newName
+#        print ent0.name
+#        print ent0.kind
+#        print "New-name:", ent0.newName
         
     # posVal is an array of arrays describing the possible values,
     # explanation, and usage:
@@ -323,6 +334,9 @@ class methods(object):
 
     def addDescription(self, description):
         self.description = description
+
+    def showDescription(self):
+        print self.description
 
     def asComment(self, comment):
         self.description = comment
@@ -431,6 +445,7 @@ class methods(object):
 #            name = argos["name"]
 #            theArgs.append("[{}={}]".format(argos["name"], argos["demo"]))
             name = argos.name
+#            print "OPTIONAL-KV", argos
             theArgs.append("{}".format(name))
             mapo[name] = { "name":name, "kind":"okv", "seq":seq, "arg":argos }
             mpp[name] = False
@@ -516,6 +531,8 @@ class methods(object):
         leDic = {}
         leDic["_argumentsPresent"] = mappy["present"]
         dap = leDic["_argumentsPresent"]
+#        print "argumentsPresent:", dap
+#        print "LeDic:" , leDic
         nArgs = mappy["nargs"]
 
 #        usage = "Usage: {} {} {}".format(prePath, self.name, ' '.join(mappy["usage"]))
@@ -545,6 +562,7 @@ class methods(object):
                     val = "=".join(parts[1:])
 
                 try:
+#                    print "mappy-key", mappy[key]["arg"]
                     ak = mappy[key]["kind"]
                     try:
                         nArgs[ak] += 1
@@ -666,6 +684,15 @@ class methods(object):
             except:
                 print "> Missing argument: {} required by {}".format(rw,review[rw])
                 fail = True
+#        print "Do we have entries for everything?"
+        for dk in dap.keys():
+            if not dk in leDic.keys():
+#                print "no value for : ", dk
+                margs = mappy[dk]["arg"].default
+                if not margs is None:
+                    leDic[dk] = margs
+#                for mk in margs.keys():
+#                print "MAPPY:", margs
         return leDic, fail
 
         
