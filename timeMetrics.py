@@ -43,3 +43,7 @@ class methods(object):
             tnow = time.time()
             print "{} Delta-T {} {}[ms] ".format(name, msg, (tnow - ref)* 1000.)
 
+    def ms(self, ref, verbose):
+        if verbose:
+            return "{} [ms] ".format((time.time() - ref)* 1000.)
+
